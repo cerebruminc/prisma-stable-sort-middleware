@@ -4,12 +4,12 @@
   <p>
     A Prisma middleware for ensuring stable sorting of results on any model
   </p>
-  <br>
 </div>
 
 <hr>
 
-When using Prisma to query a database and ordering the results by a non-unique field the order of the results is not guaranteed to be stable. This is because the database does not guarantee the order of results if multiple rows have the same value for the field that the results are being ordered by. This can be problematic if you are using the results of a query to generate a list of items that the user can interact with, as the order of the items may change between requests.
+When using Prisma to query a database and ordering the results by a non-unique field the order of the results is not guaranteed to be stable. This is because the database does not guarantee the order of results if multiple rows have the same value for the field that the results are being ordered by.
+This can be problematic if you are using the results of a query to generate a list of items that the user can interact with, as the order of the items may change between requests.
 This middleware solves this problem by adding a secondary sort order to the query, base on a unique field in the model. This ensures that the order of the results is stable, even if multiple rows have the same value for the field that the results are being ordered by.
 
 ## Installation
