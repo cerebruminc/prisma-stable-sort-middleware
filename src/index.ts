@@ -31,7 +31,7 @@ export const stableSortMiddleware = (client: PrismaClient): Prisma.Middleware =>
 	return (params, next) => {
 		const { model, action } = params;
 
-		if (!model || !action) {
+		if (!(model && action)) {
 			return next(params);
 		}
 
