@@ -28,7 +28,7 @@ const getUniqueFieldData = (client: PrismaClient) => {
 export const stableSortMiddleware = (client: PrismaClient): Prisma.Middleware => {
 	const uniqueFields = getUniqueFieldData(client);
 
-	return async (params, next) => {
+	return (params, next) => {
 		const { model, action } = params;
 
 		if (!model || !action) {
