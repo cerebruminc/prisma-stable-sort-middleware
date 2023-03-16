@@ -1,6 +1,6 @@
 {
   "name": "@cerebruminc/prisma-stable-sort-middleware",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Guarantees stable sort order for all Prisma queries",
   "main": "dist/index.js",
   "scripts": {
