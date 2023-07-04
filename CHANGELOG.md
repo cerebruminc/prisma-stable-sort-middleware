@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v1.0.2...v1.0.3) (2023-03-29)
+
+
+### Bug Fixes
+
+* bac-24 Only run publish-beta workflow on trusted PRs ([96c19d2](https://github.com/cerebruminc/prisma-stable-sort-middleware/commit/96c19d26e534def02ae522eb464926a7ad39ba75))
+
 ## 1.0.2 (2023-03-16)
 
 
