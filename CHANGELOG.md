@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v1.0.3...v2.0.0) (2023-08-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires Prisma v5
+
+### Features
+
+* upgrade to prisma v5 ([71a776e](https://github.com/cerebruminc/prisma-stable-sort-middleware/commit/71a776ed710cefadbd46ef6b8159d2aa0e3a0b90))
+
 ## [1.0.3](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v1.0.2...v1.0.3) (2023-03-29)
 
 
