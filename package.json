@@ -15,19 +15,19 @@
   "author": "Cerebrum <hello@cerebrum.com> (https://cerebrum.com)",
   "license": "MIT",
   "devDependencies": {
-    "@prisma/client": "^4.0.0",
+    "@prisma/client": "^5.0.0",
     "@types/jest": "^29.2.6",
     "@types/lodash": "^4.14.191",
     "@types/uuid": "^9.0.0",
     "jest": "^29.3.1",
-    "prisma": "^4.9.0",
+    "prisma": "^5.0.0",
     "rome": "^11.0.0",
     "ts-jest": "^29.0.5",
     "typescript": "^4.9.4",
     "uuid": "^9.0.0"
   },
   "peerDependencies": {
-    "@prisma/client": "^4.0.0",
-    "prisma": "^4.9.0"
+    "@prisma/client": "^5.0.0",
+    "prisma": "^5.0.0"
   }
 }

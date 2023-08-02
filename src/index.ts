@@ -1,4 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
+import { RuntimeDataModel } from "@prisma/client/runtime/library";
 
 const castArray = <T>(value: T | T[]): T[] => {
 	if (Array.isArray(value)) {
@@ -10,12 +11,13 @@ const castArray = <T>(value: T | T[]): T[] => {
 // Creates an object indicating the unique fields for each model
 const getUniqueFieldData = (client: PrismaClient) => {
 	const uniqueFields: { [model: string]: { [field: string]: boolean } } = {};
-	for (const model of (client as any)._baseDmmf.datamodel.models) {
-		if (!uniqueFields[model.name]) {
-			uniqueFields[model.name] = {};
+	const runtimeDataModel = (client as any)._runtimeDataModel as RuntimeDataModel;
+	for (const key in runtimeDataModel.models) {
+		if (!uniqueFields[key]) {
+			uniqueFields[key] = {};
 		}
-		for (const field of model.fields) {
-			uniqueFields[model.name][field.name] = field.isId || field.isUnique;
+		for (const field of runtimeDataModel.models[key].fields) {
+			uniqueFields[key][field.name] = field.isId || field.isUnique;
 		}
 	}
 
