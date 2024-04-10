@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v2.0.0...v2.0.1) (2024-04-10)
+
+
+### Bug Fixes
+
+* add package-lock file ([#9](https://github.com/cerebruminc/prisma-stable-sort-middleware/issues/9)) ([e874eb3](https://github.com/cerebruminc/prisma-stable-sort-middleware/commit/e874eb3316432bc2d6e2be51ee698310847fd576))
+* update actions to latest version ([0c37790](https://github.com/cerebruminc/prisma-stable-sort-middleware/commit/0c377903818bd859e96a69f3b8052499ecfbbfbb))
+
 ## [2.0.0](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v1.0.3...v2.0.0) (2023-08-02)
 
 
