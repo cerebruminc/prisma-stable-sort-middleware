@@ -257,4 +257,3 @@ tags
 
 dist/
 .npmrc
-package-lock.json
