@@ -1,5 +1,8 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import { RuntimeDataModel } from "@prisma/client/runtime/library";
+import { defineDmmfProperty } from "@prisma/client/runtime/library";
+
+// RuntimeDataModel is not exported from Prisma, so we need to use some type infiltration to get it
+export type RuntimeDataModel = Parameters<typeof defineDmmfProperty>[1];
 
 const castArray = <T>(value: T | T[]): T[] => {
 	if (Array.isArray(value)) {
