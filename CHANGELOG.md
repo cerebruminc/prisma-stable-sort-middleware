@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v2.0.1...v2.0.2) (2025-02-13)
+
+
+### Bug Fixes
+
+* **ci:** upgrade to ubuntu-latest as os image to run the integration-test workflow ([d64bfb8](https://github.com/cerebruminc/prisma-stable-sort-middleware/commit/d64bfb81870a42248c5fbdb6a1403dacba1c140c))
+
 ## [2.0.1](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v2.0.0...v2.0.1) (2024-04-10)
 
 
