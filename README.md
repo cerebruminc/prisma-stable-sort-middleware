@@ -30,6 +30,27 @@ const client = new PrismaClient();
 client.$use(stableSortMiddleware(client));
 ```
 
+### Usage with a custom Prisma Client output path
+
+If your Prisma schema generates the client to a custom location, import your generated client from that location and pass it to the middleware as usual.
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+```
+
+```ts
+import { stableSortMiddleware } from "@cerebruminc/prisma-stable-sort-middleware";
+import { PrismaClient } from "../src/generated/prisma";
+
+const client = new PrismaClient();
+client.$use(stableSortMiddleware(client));
+```
+
+This package does not import `@prisma/client/runtime/library`; it only requires a generated Prisma client instance that exposes Prisma's runtime data model.
+
 ## License
 
 The project is licensed under the MIT license.
@@ -43,3 +64,12 @@ The project is licensed under the MIT license.
 ![Cerebrum](./images/powered-by-cerebrum-dm.svg#gh-dark-mode-only)
 
 </div>
+
+## Contributing
+
+Before opening a pull request, please run:
+
+- `npm test`
+- `npm run test:integration`
+
+Please also follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification when writing commit messages.
