@@ -6,7 +6,9 @@
   "scripts": {
     "generate": "prisma generate",
     "build": "tsc",
-    "test": "rome ci src",
+    "lint": "rome ci src",
+    "test": "npm run lint && npm run test:unit",
+    "test:unit": "jest test/unit",
     "test:integration": "jest test/integration",
     "test:compose:integration": "docker compose -f docker-compose.yml --profile with-sut up db sut --exit-code-from sut",
     "setup": "prisma generate && prisma migrate dev",
