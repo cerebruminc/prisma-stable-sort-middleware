@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v2.0.2...v2.1.0) (2026-04-30)
+
+
+### Features
+
+* support custom Prisma client output paths ([4aec202](https://github.com/cerebruminc/prisma-stable-sort-middleware/commit/4aec2020b9dab9f50f37c97cc4c07eba786fddc2))
+
 ## [2.0.2](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v2.0.1...v2.0.2) (2025-02-13)
 
 
