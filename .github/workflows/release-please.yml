@@ -11,7 +11,7 @@ jobs:
     env:
       CEREBRUM_NPM_TOKEN: ${{ secrets.CEREBRUM_NPM_TOKEN }}
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - uses: googleapis/release-please-action@v5
         id: release
         with:
           release-type: node
