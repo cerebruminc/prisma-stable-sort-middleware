@@ -72,6 +72,7 @@ lib-cov
 # Coverage directory used by tools like istanbul
 
 coverage
+test/fixtures/prisma7/generated
 \*.lcov
 
 # nyc test coverage

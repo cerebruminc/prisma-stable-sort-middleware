@@ -1,7 +1,7 @@
 export interface RuntimeFieldLike {
 	name: string;
-	isId: boolean;
-	isUnique: boolean;
+	isId?: boolean;
+	isUnique?: boolean;
 }
 
 export interface RuntimeModelLike {
@@ -14,15 +14,20 @@ export interface RuntimeDataModelLike {
 
 export type RuntimeDataModel = RuntimeDataModelLike;
 
-export type PrismaClientLike = object & { _runtimeDataModel?: RuntimeDataModelLike };
+export type PrismaClientLike = object & {
+	_runtimeDataModel?: RuntimeDataModelLike;
+	_engineConfig?: { inlineSchema?: unknown };
+};
+
+export interface QueryArgsLike {
+	orderBy?: Record<string, unknown> | Array<Record<string, unknown>>;
+	[key: string]: unknown;
+}
 
 export interface MiddlewareParamsLike {
 	model?: string;
 	action?: string;
-	args?: {
-		orderBy?: Record<string, unknown> | Array<Record<string, unknown>>;
-		[key: string]: unknown;
-	};
+	args?: QueryArgsLike;
 	dataPath?: string[];
 	runInTransaction?: boolean;
 	[key: string]: unknown;
@@ -31,6 +36,23 @@ export interface MiddlewareParamsLike {
 type MiddlewareNextLike = (params: any) => Promise<any> | any;
 
 export type MiddlewareLike = (params: any, next: MiddlewareNextLike) => Promise<any> | any;
+
+export interface QueryExtensionParamsLike {
+	model: string;
+	operation: string;
+	args: QueryArgsLike;
+	query: (args: QueryArgsLike) => Promise<any> | any;
+	[key: string]: unknown;
+}
+
+export interface StableSortExtensionLike {
+	name: string;
+	query: {
+		$allModels: {
+			$allOperations: (params: QueryExtensionParamsLike) => Promise<any> | any;
+		};
+	};
+}
 
 const getRuntimeDataModel = (client: PrismaClientLike): RuntimeDataModelLike => {
 	const runtimeDataModel = client._runtimeDataModel;
@@ -51,25 +73,118 @@ const castArray = <T>(value: T | T[]): T[] => {
 	return [value];
 };
 
-// Creates an object indicating the unique fields for each model
-const getUniqueFieldData = (client: PrismaClientLike) => {
-	const uniqueFields: { [model: string]: { [field: string]: boolean } } = {};
-	const runtimeDataModel = getRuntimeDataModel(client);
-	for (const key in runtimeDataModel.models) {
-		if (!uniqueFields[key]) {
-			uniqueFields[key] = {};
+// The Prisma 7 `prisma-client` generator omits uniqueness flags from `_runtimeDataModel`,
+// but retains the schema used to generate the client in `_engineConfig.inlineSchema`.
+const getInlineSchemaUniqueFields = (client: PrismaClientLike) => {
+	const uniqueFields: { [model: string]: Set<string> } = {};
+	const inlineSchema = client._engineConfig?.inlineSchema;
+
+	if (typeof inlineSchema !== "string") {
+		return uniqueFields;
+	}
+
+	let currentModel: string | null = null;
+	for (const line of inlineSchema.split(/\r?\n/)) {
+		const normalizedLine = line.replace(/"(?:\\.|[^"\\])*"/g, '""').trim();
+
+		if (!currentModel) {
+			const model = /^model\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{/.exec(normalizedLine);
+			if (model) {
+				currentModel = model[1];
+				uniqueFields[currentModel] = new Set();
+			}
+			continue;
 		}
-		for (const field of runtimeDataModel.models[key].fields) {
-			uniqueFields[key][field.name] = field.isId || field.isUnique;
+
+		if (normalizedLine === "}") {
+			currentModel = null;
+			continue;
+		}
+		if (normalizedLine.startsWith("//")) {
+			continue;
+		}
+		if (normalizedLine.startsWith("@@")) {
+			const singleFieldConstraint =
+				/^@@(?:id|unique)\s*\(\s*(?:fields\s*:\s*)?\[\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?:\([^)]*\))?\s*\]\s*(?:,|\))/.exec(
+					normalizedLine,
+				);
+			if (singleFieldConstraint) {
+				uniqueFields[currentModel].add(singleFieldConstraint[1]);
+			}
+			continue;
+		}
+		if (!/(?:^|\s)@(?:id|unique)\b/.test(normalizedLine)) {
+			continue;
+		}
+
+		const field = /^([A-Za-z_][A-Za-z0-9_]*)\s+/.exec(normalizedLine);
+		if (field) {
+			uniqueFields[currentModel].add(field[1]);
 		}
 	}
 
 	return uniqueFields;
 };
 
-// If the orderBy is just createdAt, add an id desc to the end of the orderBy
-// The unique ID stabilizes the sort, providing consistent ordering when the createdAt is the same
-// This is needed because the createdAt is not unique, and batch uploads will have the same createdAt
+// Creates an object indicating the unique fields for each model
+const getUniqueFieldData = (client: PrismaClientLike) => {
+	const uniqueFields: { [model: string]: { [field: string]: boolean } } = {};
+	const runtimeDataModel = getRuntimeDataModel(client);
+	const inlineSchemaUniqueFields = getInlineSchemaUniqueFields(client);
+	for (const key in runtimeDataModel.models) {
+		if (!uniqueFields[key]) {
+			uniqueFields[key] = {};
+		}
+		for (const field of runtimeDataModel.models[key].fields) {
+			uniqueFields[key][field.name] =
+				field.isId === true || field.isUnique === true || inlineSchemaUniqueFields[key]?.has(field.name) === true;
+		}
+	}
+
+	return uniqueFields;
+};
+
+const stabilizeOrderBy = (
+	uniqueFields: { [model: string]: { [field: string]: boolean } },
+	model: string,
+	args?: QueryArgsLike,
+) => {
+	// In Prisma, sorting by a single field can be done by passing a plain object, so for convenience we cast it to an array
+	const orderBy = args?.orderBy ? castArray(args.orderBy) : null;
+
+	if (!(orderBy && args)) {
+		return;
+	}
+
+	const hasUniqueField = orderBy.some((o) => {
+		const [field] = Object.keys(o);
+		return uniqueFields[model][field];
+	});
+	// If the orderBy does not contain a unique field, add one to stabilize the sort
+	if (hasUniqueField) {
+		return;
+	}
+
+	// Prefer to stabilise by a unique ID if there is one available
+	if (uniqueFields[model].id && uniqueFields[model].id === true) {
+		orderBy.push({ id: "desc" });
+	} else {
+		// Otherwise, use the first unique field to stabilise the sort
+		const uniqueField = Object.entries(uniqueFields[model]).find(([, isUnique]) => isUnique);
+
+		if (!uniqueField) {
+			throw new Error(`Could not find a unique field to stabilize sorting on model: '${model}'`);
+		}
+		const [fieldName] = uniqueField;
+		orderBy.push({ [fieldName]: "desc" });
+	}
+	args.orderBy = orderBy;
+};
+
+/**
+ * Legacy middleware API for Prisma 5 and Prisma 6.0–6.13 applications.
+ * New integrations should use `stableSortExtension`; Prisma 6.14 removed the `$use` middleware API.
+ */
 export const stableSortMiddleware = (client: PrismaClientLike): MiddlewareLike => {
 	const uniqueFields = getUniqueFieldData(client);
 
@@ -83,35 +198,26 @@ export const stableSortMiddleware = (client: PrismaClientLike): MiddlewareLike =
 			return next(params);
 		}
 
-		const args = params.args;
-		// In Prisma, sorting by a single field can be done by passing a plain object, so for convenience we cast it to an array
-		const orderBy = args?.orderBy ? castArray(args.orderBy) : null;
-
-		if (orderBy && args) {
-			const hasUniqueField = orderBy.some((o) => {
-				const [field] = Object.keys(o);
-				return uniqueFields[model][field];
-			});
-			// If the orderBy does not contain a unique field, add one to stabilize the sort
-			if (!hasUniqueField) {
-				// Prefer to stabilise by a unique ID if there is one available
-				if (uniqueFields[model].id && uniqueFields[model].id === true) {
-					orderBy.push({ id: "desc" });
-				} else {
-					// Otherwise, use the first unique field to stabilise the sort
-					const uniqueField = Object.entries(uniqueFields[model]).find(([, isUnique]) => isUnique);
-
-					if (!uniqueField) {
-						throw new Error(`Could not find a unique field to use for "stableSortMiddleware" on model: '${model}'`);
-					}
-					if (uniqueField) {
-						const [fieldName] = uniqueField;
-						orderBy.push({ [fieldName]: "desc" });
-					}
-				}
-				args.orderBy = orderBy;
-			}
-		}
+		stabilizeOrderBy(uniqueFields, model, params.args);
 		return next(params);
+	};
+};
+
+// Prisma 7 removes the client middleware API. Query extensions are supported by Prisma 5, 6, and 7.
+export const stableSortExtension = (client: PrismaClientLike): StableSortExtensionLike => {
+	const uniqueFields = getUniqueFieldData(client);
+
+	return {
+		name: "stable-sort",
+		query: {
+			$allModels: {
+				$allOperations({ model, args, query }) {
+					if (uniqueFields[model]) {
+						stabilizeOrderBy(uniqueFields, model, args);
+					}
+					return query(args);
+				},
+			},
+		},
 	};
 };
