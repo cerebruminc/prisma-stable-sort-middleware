@@ -8,6 +8,7 @@ services:
       dockerfile: ./Dockerfile.sut
     profiles:
       - with-sut
+      - with-sut-v5
     depends_on:
       db:
         condition: service_healthy
@@ -16,15 +17,43 @@ services:
     networks:
       - internal
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/yates?connection_limit=30
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/prisma_stable_sort?connection_limit=30
+
+  sut-v6:
+    build:
+      context: .
+      dockerfile: ./test/fixtures/prisma6/Dockerfile
+    profiles:
+      - with-sut-v6
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/prisma_stable_sort
+
+  sut-v7:
+    build:
+      context: .
+      dockerfile: ./test/fixtures/prisma7/Dockerfile
+    profiles:
+      - with-sut-v7
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/prisma_stable_sort
 
   db:
-    image: postgres:11
+    image: postgres:14
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: yates
+      POSTGRES_DB: prisma_stable_sort
     ports:
       - 55432:5432
     networks:

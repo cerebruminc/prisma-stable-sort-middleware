@@ -5,10 +5,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Note that any user of Yates will also need to use the clientExtensions preview feature
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["clientExtensions"]
+  provider = "prisma-client-js"
 }
 
 model User {

@@ -10,7 +10,6 @@ jobs:
       id-token: write
       contents: read
     runs-on: ubuntu-latest
-    name: integration testing in docker compose
     defaults:
       run:
         shell: bash --noprofile --norc -eo pipefail -x {0}
@@ -20,6 +19,10 @@ jobs:
 
     strategy:
       fail-fast: false
+      matrix:
+        prisma-version: [5, 6, 7]
+
+    name: Prisma ${{ matrix.prisma-version }} integration in Docker Compose
 
     steps:
       - name: Checkout
@@ -27,4 +30,4 @@ jobs:
 
       - name: Run docker compose tests
         run: |
-          npm run test:compose:integration
+          npm run test:compose:integration:v${{ matrix.prisma-version }}
