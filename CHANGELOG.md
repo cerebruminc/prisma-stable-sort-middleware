@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v2.1.0...v2.2.0) (2026-08-10)
+
+
+### Features
+
+* support Prisma 7 while preserving Prisma 5 compatibility ([10017a5](https://github.com/cerebruminc/prisma-stable-sort-middleware/commit/10017a561bba52ae9b41a9c1e8c92910bcb686de))
+
 ## [2.1.0](https://github.com/cerebruminc/prisma-stable-sort-middleware/compare/v2.0.2...v2.1.0) (2026-04-30)
 
 
